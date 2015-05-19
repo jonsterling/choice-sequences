@@ -1,7 +1,7 @@
-module sigma where
+module ambience.sigma where
 
+open import ambience.id
 open import Agda.Primitive
-open import id
 
 record Σ {a b} (A : Set a) (B : A → Set b) : Set (a ⊔ b) where
   constructor _,_

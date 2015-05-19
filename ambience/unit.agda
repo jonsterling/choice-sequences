@@ -1,4 +1,4 @@
-module unit where
+module ambience.unit where
 
 record Unit : Set where
   constructor ⟨⟩

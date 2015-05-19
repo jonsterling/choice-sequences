@@ -1,16 +1,14 @@
 module choice-sequence where
 
-open import naturals
-open import sigma
+import ambience.naturals as ℕ
+open import ambience.logic
 
-ChoiceSequence : Set₁
-ChoiceSequence = ℕ → ℕ → Set
+t : Set₁
+t = ℕ.t → ℕ.t → Set
 
-is-lawlike : ChoiceSequence → Set
-is-lawlike α = (n : ℕ) → Σ![ m ∶ ℕ ] α n m
+is-lawlike : t → Set
+is-lawlike α = ∀ n → ∃![ m ] α n m
 
-compute-sequence : {α : ChoiceSequence} → is-lawlike α → ℕ → ℕ
+compute-sequence : {α : t} → is-lawlike α → ℕ.t → ℕ.t
 compute-sequence lawlike n with lawlike n
 compute-sequence lawlike n | m , _ = m
-
-

@@ -1,4 +1,4 @@
-module sum where
+module ambience.sum where
 
 open import Agda.Primitive
 

@@ -1,38 +1,46 @@
 module spread where
 
-open import choice-sequence
-open import naturals
-open import negation
-open import list
-open import sigma
-open import sum
-open import unit
-open import void
+import ambience.naturals as ℕ
+open import ambience.logic
+import choice-sequence as cs 
+import finite-sequence as fs ; open fs hiding (t; _∈_)
 
-PreSpreadLaw : Set₁
-PreSpreadLaw = ℕ list → Set
+law : Set₁
+law = fs.t → Set
 
-record is-spread-law (admit : PreSpreadLaw) : Set where
+record spr (s : law) : Set where
   field
-    admit-empty : admit []
-    admit-^ : (u : ℕ list) → admit u → Σ[ k ∶ ℕ ] admit (u ^ k)
-    admit-≼ : (u v : ℕ list) → u ≼ v → admit u → admit v
-    admit-dec : (u : ℕ list) → (admit u) + (¬ admit u)
+    spr-⟨⟩ : s ⟨⟩
+    spr-^ : (u : fs.t) → s u → ∃[ k ] s (u ^ k)
+    spr-≼ : (u v : fs.t) → u ≼ v → s u → s v
+    spr-dec : (u : fs.t) → s u ∨ (¬ s u)
 
-Spread : Set₁
-Spread = Σ PreSpreadLaw is-spread-law
+t : Set₁
+t = Σ law spr
 
-universal-spread : Spread
-universal-spread = (λ u → Unit) , record
-  { admit-empty = ⟨⟩
-  ; admit-^ = λ u _ → ze , ⟨⟩
-  ; admit-≼ = λ u v _ _ → ⟨⟩
-  ; admit-dec = λ u → inl ⟨⟩
+universal : t
+universal = (λ x → ⊤) , record
+  { spr-⟨⟩ = ⟨⟩
+  ; spr-^ = λ u _ → ℕ.ze , ⟨⟩
+  ; spr-≼ = λ u v _ _ → ⟨⟩
+  ; spr-dec = λ u → inl ⟨⟩
   }
 
-prefix : ChoiceSequence → ℕ list → Set
-prefix α u = (n : ℕ) (p : n < ∣ u ∣) → α n (u [ n ])
+∀< : (n : ℕ.t) → ((i : ℕ.t) {{_ : i ℕ.< n}} → Set) → Set
+∀< n φ = ∀ i → (_ : i ℕ.< n) → φ i
 
-_∈_ : ChoiceSequence → Spread → Set
-α ∈ (s , _) = (u : ℕ list) → prefix α u → s u
+∃< : (n : ℕ.t) → ((i : ℕ.t) {{_ : i ℕ.< n}} → Set) → Set
+∃< n φ = ∃[ i ] Σ[ _ ∶ i ℕ.< n ] φ i
 
+syntax ∀< n (λ i → φ) = ∀[ i < n ] φ
+syntax ∃< n (λ i → φ) = ∃[ i < n ] φ
+
+-- The full n-ary spread
+full-spr : ℕ.t → t → Set
+full-spr n (s , is-law) =
+  ∀ u → (s u ⇔ (∀[ i < ∣ u ∣ ] u [ i ] ℕ.< n))
+      & ((¬ s u) ⇔ (∃[ i < ∣ u ∣ ] u [ i ] ℕ.≥ n))
+
+-- a choice sequence is in a spread is every one of its prefixes is admitted
+_∈_ : cs.t → law → Set
+α ∈ s = ∀ u → α fs.∈ u → s u
